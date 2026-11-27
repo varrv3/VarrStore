@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080808">
+<title>VarrStore — Stock Akun</title>
+<style>
+:root{--bg:#080808;--panel:#111;--line:#292929;--muted:#aaa;--white:#f5f5f5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font:15px/1.5 Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#080808ed;border-bottom:1px solid var(--line);padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-weight:900;letter-spacing:2px;font-size:20px}.logo span{color:#888}
+button,.btn{border:1px solid #555;background:#f4f4f4;color:#080808;padding:10px 15px;border-radius:9px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+button.secondary,.btn.secondary{background:#151515;color:#fff;border-color:#444}button.danger{background:#351515;color:#fff;border-color:#703333}
+button:disabled{opacity:.45;cursor:not-allowed}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+main{max-width:1120px;margin:auto;padding:28px 5% 70px}
+.hero{padding:35px 0 28px}.eyebrow{color:#aaa;letter-spacing:3px;font-size:12px}.hero h1{font-size:clamp(32px,6vw,58px);line-height:1.04;margin:10px 0}.hero p{color:#bbb;max-width:650px}
+.notice{border:1px solid var(--line);background:#101010;border-radius:12px;padding:15px;margin:16px 0;color:#ddd}
+.notice strong{color:white}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.product-img{width:100%;height:185px;object-fit:cover;background:#202020;display:block}
+.card-body{padding:14px}.price{font-size:19px;font-weight:800;margin:8px 0}.muted{color:var(--muted)}.tag{font-size:11px;border:1px solid #555;padding:3px 8px;border-radius:20px;color:#ddd}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1}
+section{margin:28px 0}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.panel{padding:18px;margin:15px 0}.hidden{display:none!important}
+input,textarea,select{width:100%;padding:11px;background:#080808;color:white;border:1px solid #444;border-radius:8px;margin:5px 0 12px;font:inherit}
+label{font-size:13px;color:#ccc}textarea{min-height:80px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #333}
+.modal{position:fixed;inset:0;background:#000c;z-index:10;display:grid;place-items:center;padding:15px;overflow:auto}
+.modal-box{width:min(520px,100%);max-height:92vh;overflow:auto;background:#111;border:1px solid #444;border-radius:16px;padding:20px}
+.qr{width:min(260px,100%);aspect-ratio:1;object-fit:contain;background:#fff;padding:8px;border-radius:10px;display:block;margin:12px auto}
+footer{border-top:1px solid var(--line);padding:25px 5%;text-align:center;color:#888}
+.small{font-size:12px;color:#999}.cart-count{display:inline-block;background:#222;color:white;border-radius:20px;padding:1px 7px}
+@media(max-width:600px){header{align-items:flex-start;flex-direction:column}.actions{flex-direction:column}.hero{padding-top:20px}}
+</style></head>
+<body>
+<header><div class="logo">VARR<span>STORE</span></div><nav>
+<button class="secondary" onclick="showCart()">Keranjang <span id="cartCount" class="cart-count">0</span></button>
+<button class="secondary" onclick="openAuth()">Akun</button><button class="secondary" onclick="ownerLogin()">Owner</button>
+</nav></header>
+<main>
+<div class="hero"><div class="eyebrow">STOCK AKUN BY VARR STORE</div><h1>Temukan akun<br>pilihanmu.</h1><p>Etalase stock akun VarrStore. Lihat detail, masukkan ke keranjang, lalu lanjutkan pemesanan melalui WhatsApp admin.</p></div>
+<div class="notice"><strong>Cara beli :</strong> Pesan lewat WhatsApp, bayar ke admin, data akun dikirim setelah pembayaran dicek.<br><strong>Garansi :</strong> Anti HackBack<br><strong>Admin Resmi :</strong> Selain nomer 0838-4070-2225, Jangan Transfer!</div>
+<section><div class="section-title"><h2>Stock tersedia</h2><span class="muted" id="stockTotal"></span></div><div id="products" class="grid"></div></section>
+<section id="ownerPanel" class="hidden"><div class="section-title"><h2>Panel Owner</h2><button class="danger" onclick="ownerLogout()">Keluar Owner</button></div>
+<div class="panel"><h3 id="productFormTitle">Tambah stock</h3><form id="productForm"><input type="hidden" id="editId">
+<div class="form-grid"><div><label>Nama stock</label><input id="pName" required placeholder="Nama akun"></div><div><label>Harga (Rp)</label><input id="pPrice" type="number" min="0" required placeholder="100000"></div></div>
+<label>Deskripsi stock</label><textarea id="pDesc" placeholder="Deskripsi akun"></textarea>
+<label>Foto stock</label><input id="pImage" type="file" accept="image/*">
+<label>Status stock</label><select id="pStatus"><option value="ready">Masih tersedia</option><option value="sold">Habis</option></select>
+<button type="submit">Simpan stock</button><button type="button" class="secondary" onclick="resetProductForm()">Batal</button></form></div>
+<div class="panel"><h3>Foto QRIS</h3><p class="muted">Unggah gambar QRIS yang pelanggan lihat saat checkout.</p><input type="file" id="qrisFile" accept="image/*"><img id="qrisPreview" class="qr hidden" alt="QRIS"></div>
+<div class="panel"><h3>Riwayat order pada perangkat ini</h3><div id="orders"><p class="muted">Belum ada order.</p></div></div>
+</section>
+</main>
+<footer>© <span id="year"></span> VarrStore · Admin WhatsApp 0838-4070-2225</footer>
+<div id="modal" class="modal hidden"><div class="modal-box"><div class="row"><h2 id="modalTitle">Akun</h2><button class="secondary" onclick="closeModal()">Tutup</button></div><div id="modalContent"></div></div></div>
+<script>
+const KEY='varrstore_demo_v1', OWNER_HASH='b3b1b5b3e6d4b4c3d6f0e4e8a1a6e6c4'; // placeholder hash: owner access is demo-only
+const WA='6283840702225';
+let db=JSON.parse(localStorage.getItem(KEY)||'{}');
+db.products ||= []; db.users ||= []; db.orders ||= []; db.cart ||= []; db.qris ||= '';
+let currentUser=localStorage.getItem('vs_user')||'', owner=false;
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function rupiah(n){return 'Rp '+Number(n||0).toLocaleString('id-ID')}
+function safe(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+ const list=document.getElementById('products'); list.innerHTML='';
+ db.products.forEach(p=>{let el=document.createElement('article');el.className='card';
+ el.innerHTML=`<img class="product-img" src="${p.image||''}" alt="Foto ${safe(p.name)}"><div class="card-body"><div class="row"><strong>${safe(p.name)}</strong><span class="tag">${p.status==='sold'?'HABIS':'TERSEDIA'}</span></div><p class="muted">${safe(p.desc)}</p><div class="price">${rupiah(p.price)}</div><div class="actions"><button ${p.status==='sold'?'disabled':''} onclick="addCart('${p.id}')">+ Keranjang</button><button class="secondary" ${p.status==='sold'?'disabled':''} onclick="checkoutOne('${p.id}')">ORDER</button></div>${owner?`<div class="actions"><button class="secondary" onclick="editProduct('${p.id}')">Edit</button><button class="danger" onclick="deleteProduct('${p.id}')">Hapus</button></div>`:''}</div>`;list.appendChild(el)});
+ document.getElementById('stockTotal').textContent=db.products.length+' item';
+ document.getElementById('cartCount').textContent=db.cart.length;
+ document.getElementById('ownerPanel').classList.toggle('hidden',!owner);
+ document.getElementById('qrisPreview').src=db.qris||'';document.getElementById('qrisPreview').classList.toggle('hidden',!db.qris);
+}
+function openModal(title,html){document.getElementById('modalTitle').textContent=title;document.getElementById('modalContent').innerHTML=html;document.getElementById('modal').classList.remove('hidden')}
+function closeModal(){document.getElementById('modal').classList.add('hidden')}
+function openAuth(){openModal('Akun pelanggan',`<div id="authForms"><h3>Masuk</h3><label>Username</label><input id="loginName"><label>Password</label><input id="loginPass" type="password"><button onclick="login()">Masuk</button><hr><h3>Daftar akun</h3><label>Username</label><input id="regName"><label>Password</label><input id="regPass" type="password"><button onclick="register()">Daftar</button></div><div id="profile"></div>`);if(currentUser)showProfile()}
+function register(){let u=document.getElementById('regName').value.trim(),p=document.getElementById('regPass').value;if(u.length<3||p.length<4)return alert('Username minimal 3 karakter dan password minimal 4 karakter.');if(db.users.some(x=>x.name.toLowerCase()===u.toLowerCase()))return alert('Username sudah digunakan.');db.users.push({name:u,pass:p});save();currentUser=u;localStorage.setItem('vs_user',u);showProfile()}
+function login(){let u=document.getElementById('loginName').value.trim(),p=document.getElementById('loginPass').value;if(!db.users.some(x=>x.name===u&&x.pass===p))return alert('Username atau password salah.');currentUser=u;localStorage.setItem('vs_user',u);showProfile()}
+function showProfile(){document.getElementById('authForms').classList.add('hidden');document.getElementById('profile').innerHTML=`<p>Login sebagai <b>${safe(currentUser)}</b></p><label>Ganti username</label><input id="newUser" value="${safe(currentUser)}"><label>Ganti password</label><input id="newPass" type="password" placeholder="Password baru"><button onclick="updateProfile()">Simpan profil</button><p class="small">Tautkan Google/Facebook memerlukan layanan OAuth dan backend; fitur ini belum aktif pada versi satu file.</p><button class="secondary" onclick="logoutUser()">Keluar</button>`}
+function updateProfile(){let n=document.getElementById('newUser').value.trim(),p=document.getElementById('newPass').value,me=db.users.find(x=>x.name===currentUser);if(!n)return alert('Username tidak boleh kosong.');if(db.users.some(x=>x.name===n&&x!==me))return alert('Username sudah dipakai.');me.name=n;if(p)me.pass=p;currentUser=n;localStorage.setItem('vs_user',n);save();showProfile();alert('Profil diperbarui.')}
+function logoutUser(){currentUser='';localStorage.removeItem('vs_user');closeModal()}
+async function ownerLogin(){let pass=prompt('Masukkan kata sandi owner:');if(pass===null)return; // Demo only: real owner authentication must be server-side.
+ if(pass==='VARRSTORE9090'){owner=true;render();document.getElementById('ownerPanel').scrollIntoView({behavior:'smooth'});alert('Mode owner demo aktif pada browser ini.')}else alert('Kata sandi salah.')}
+function ownerLogout(){owner=false;render()}
+function resetProductForm(){document.getElementById('productForm').reset();document.getElementById('editId').value='';document.getElementById('productFormTitle').textContent='Tambah stock'}
+function fileData(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+document.getElementById('productForm').onsubmit=async e=>{e.preventDefault();if(!owner)return;let id=document.getElementById('editId').value,old=db.products.find(x=>x.id===id),file=document.getElementById('pImage').files[0];let image=file?await fileData(file):(old?.image||'');let obj={id:id||Date.now().toString(),name:document.getElementById('pName').value,price:document.getElementById('pPrice').value,desc:document.getElementById('pDesc').value,status:document.getElementById('pStatus').value,image};if(old)Object.assign(old,obj);else db.products.push(obj);save();resetProductForm();render()};
+function editProduct(id){let p=db.products.find(x=>x.id===id);document.getElementById('editId').value=id;document.getElementById('pName').value=p.name;document.getElementById('pPrice').value=p.price;document.getElementById('pDesc').value=p.desc;document.getElementById('pStatus').value=p.status;document.getElementById('productFormTitle').textContent='Edit stock';document.getElementById('ownerPanel').scrollIntoView({behavior:'smooth'})}
+function deleteProduct(id){if(confirm('Hapus stock ini?')){db.products=db.products.filter(x=>x.id!==id);db.cart=db.cart.filter(x=>x!==id);save();render()}}
+function addCart(id){if(!db.cart.includes(id))db.cart.push(id);save();render();alert('Stock dimasukkan ke keranjang.')}
+function showCart(){let items=db.cart.map(id=>db.products.find(p=>p.id===id)).filter(Boolean);openModal('Keranjang',items.length?items.map(p=>`<div class="row"><span>${safe(p.name)} · ${rupiah(p.price)}</span><button class="danger" onclick="removeCart('${p.id}')">Hapus</button></div>`).join('')+`<hr><b>Total: ${rupiah(items.reduce((s,p)=>s+Number(p.price),0))}</b><p><button onclick="checkoutCart()">Lanjut ORDER</button></p>`:'Keranjang masih kosong.')}
+function removeCart(id){db.cart=db.cart.filter(x=>x!==id);save();showCart();render()}
+function checkoutOne(id){db.cart=[id];save();checkoutCart()}
+function checkoutCart(){let items=db.cart.map(id=>db.products.find(p=>p.id===id)).filter(p=>p&&p.status==='ready');if(!items.length)return alert('Tidak ada stock tersedia di keranjang.');let total=items.reduce((s,p)=>s+Number(p.price),0);openModal('Konfirmasi & pembayaran',`<p>Pesanan: ${items.map(p=>safe(p.name)).join(', ')}</p><h2>${rupiah(total)}</h2>${db.qris?`<img class="qr" src="${db.qris}" alt="QRIS pembayaran">`:'<div class="notice">QRIS belum diunggah admin. Hubungi admin sebelum membayar.</div>'}<p class="muted">Bayar hanya setelah konfirmasi dengan admin resmi. Setelah transfer, pilih bukti transfer.</p><label>Kirim bukti transfer (gambar)</label><input type="file" id="proof" accept="image/*"><button onclick="submitOrder('${items.map(p=>p.id).join(',')}')">KIRIM BUKTI TRANSFER</button>`)}
+async function submitOrder(ids){let file=document.getElementById('proof').files[0];if(!file)return alert('Pilih foto bukti transfer terlebih dahulu.');let proof=await fileData(file),items=ids.split(',').map(id=>db.products.find(p=>p.id===id)).filter(Boolean);let order={id:Date.now(),customer:currentUser||'Tamu',items:items.map(p=>p.name),total:items.reduce((s,p)=>s+Number(p.price),0),date:new Date().toLocaleString('id-ID'),proofName:file.name};db.orders.unshift(order);save();let msg=`Halo Admin VarrStore, saya ingin konfirmasi order:%0A${encodeURIComponent(items.map(p=>p.name).join(', '))}%0ATotal: ${encodeURIComponent(rupiah(order.total))}%0ANama: ${encodeURIComponent(order.customer)}%0ABukti transfer: akan saya lampirkan di chat ini.`;try{if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({title:'Bukti transfer VarrStore',text:'Bukti transfer order VarrStore',files:[file]})}}catch(e){}window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');db.cart=[];items.forEach(p=>{p.status='sold'});save();render();closeModal();alert('WhatsApp dibuka. Pastikan foto bukti transfer ikut terkirim di chat.');}
+document.getElementById('qrisFile').onchange=async e=>{if(!owner)return;let f=e.target.files[0];if(f){db.qris=await fileData(f);save();render()}};
+function renderOrders(){let el=document.getElementById('orders');el.innerHTML=db.orders.length?'<table><tr><th>Pelanggan</th><th>Pesanan</th><th>Total</th><th>Waktu</th></tr>'+db.orders.map(o=>`<tr><td>${safe(o.customer)}</td><td>${safe(o.items.join(', '))}<br><span class="small">Bukti: ${safe(o.proofName)}</span></td><td>${rupiah(o.total)}</td><td>${safe(o.date)}</td></tr>`).join('')+'</table>':'<p class="muted">Belum ada order.</p>'}
+document.getElementById('year').textContent=new Date().getFullYear();
+const oldRender=render;render=function(){oldRender();renderOrders()};render();
+</script>
+</body></html>
